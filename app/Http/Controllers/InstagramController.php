@@ -40,50 +40,52 @@ class InstagramController extends Controller
     private function extractInstagramContent($url)
     {
         try {
-            // Use a simple Instagram scraper approach
-            $response = Http::withHeaders([
-                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-            ])->get($url);
+            // Try multiple Instagram APIs
+            
+            // Method 1: Use instasave.website
+            $response = Http::asForm()->post('https://instasave.website/system/action.php', [
+                'url' => $url,
+                'action' => 'post'
+            ]);
             
             if ($response->successful()) {
-                $html = $response->body();
-                
-                // Extract video URL from Instagram page
-                if (preg_match('/"video_url":"([^"]+)"/', $html, $matches)) {
-                    $videoUrl = str_replace('\\u0026', '&', $matches[1]);
-                    
-                    // Extract thumbnail
-                    $thumbnail = null;
-                    if (preg_match('/"display_url":"([^"]+)"/', $html, $thumbMatches)) {
-                        $thumbnail = str_replace('\\u0026', '&', $thumbMatches[1]);
-                    }
-                    
+                $data = $response->json();
+                if (isset($data['url'])) {
                     return [
                         'id' => time(),
-                        'title' => 'Instagram Video',
-                        'download_url' => $videoUrl,
-                        'thumbnail' => $thumbnail,
+                        'title' => $data['title'] ?? 'Instagram Content',
+                        'download_url' => $data['url'],
+                        'thumbnail' => $data['thumb'] ?? null,
                         'type' => 'video',
                         'images' => null
                     ];
                 }
-                
-                // Try to extract image
-                if (preg_match('/"display_url":"([^"]+)"/', $html, $matches)) {
-                    $imageUrl = str_replace('\\u0026', '&', $matches[1]);
-                    
+            }
+            
+            // Method 2: Use rapidapi Instagram downloader
+            $response = Http::withHeaders([
+                'X-RapidAPI-Key' => 'demo-key',
+                'X-RapidAPI-Host' => 'instagram-downloader-download-instagram-videos-stories.p.rapidapi.com'
+            ])->get('https://instagram-downloader-download-instagram-videos-stories.p.rapidapi.com/index', [
+                'url' => $url
+            ]);
+            
+            if ($response->successful()) {
+                $data = $response->json();
+                if (isset($data['media'])) {
                     return [
                         'id' => time(),
-                        'title' => 'Instagram Photo',
-                        'download_url' => null,
-                        'thumbnail' => $imageUrl,
-                        'type' => 'images',
-                        'images' => [$imageUrl]
+                        'title' => 'Instagram Content',
+                        'download_url' => $data['media'],
+                        'thumbnail' => $data['thumbnail'] ?? null,
+                        'type' => 'video',
+                        'images' => null
                     ];
                 }
             }
+            
         } catch (\Exception $e) {
-            // Extraction failed
+            // All methods failed
         }
         
         return null;
