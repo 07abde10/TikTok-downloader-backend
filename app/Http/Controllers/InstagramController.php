@@ -23,7 +23,7 @@ class InstagramController extends Controller
                     'data' => [
                         'id' => time(),
                         'title' => 'Instagram Content',
-                        'download_url' => 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4',
+                        'download_url' => 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
                         'thumbnail' => null,
                         'type' => 'video',
                         'images' => null
