@@ -40,7 +40,6 @@ class TikTokService
                 return $this->parseSSSTikResponse($html, $url);
             }
         } catch (\Exception $e) {
-            // Ignore fallback errors
         }
         
         return null;
