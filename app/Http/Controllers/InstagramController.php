@@ -23,8 +23,8 @@ class InstagramController extends Controller
                     'data' => [
                         'id' => time(),
                         'title' => 'Instagram Test Video',
-                        'download_url' => 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-                        'thumbnail' => 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg',
+                        'download_url' => 'https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4',
+                        'thumbnail' => 'https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-jpg-file.jpg',
                         'type' => 'video',
                         'images' => null
                     ]
