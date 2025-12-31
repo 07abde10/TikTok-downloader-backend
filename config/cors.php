@@ -3,7 +3,11 @@
 return [
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
     'allowed_methods' => ['*'],
-    'allowed_origins' => ['http://localhost:3000', 'http://192.168.1.2:3000', 'https://your-vercel-app.vercel.app'],
+    'allowed_origins' => [
+        'http://localhost:3000', 
+        'http://192.168.1.2:3000', 
+        'https://tik-tok-downloader-frontend.vercel.app'
+    ],
     'allowed_origins_patterns' => ['https://*.vercel.app'],
     'allowed_headers' => ['*'],
     'exposed_headers' => [],
