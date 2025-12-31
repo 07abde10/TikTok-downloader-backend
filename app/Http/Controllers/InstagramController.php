@@ -16,26 +16,77 @@ class InstagramController extends Controller
         $url = $request->input('url');
         
         try {
-            // Simple fallback for Instagram - always return test data
             if (strpos($url, 'instagram.com') !== false) {
-                return response()->json([
-                    'success' => true,
-                    'data' => [
-                        'id' => time(),
-                        'title' => 'Instagram Test Video',
-                        'download_url' => 'https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4',
-                        'thumbnail' => 'https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-jpg-file.jpg',
-                        'type' => 'video',
-                        'images' => null
-                    ]
-                ]);
+                // Try real Instagram extraction
+                $result = $this->extractInstagramContent($url);
+                if ($result) {
+                    return response()->json([
+                        'success' => true,
+                        'data' => $result
+                    ]);
+                }
+                
+                // If extraction fails, return error
+                return response()->json(['error' => 'Could not extract Instagram content. Try a different URL.'], 400);
             }
             
             return response()->json(['error' => 'Please provide a valid Instagram URL'], 400);
             
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to process Instagram content: ' . $e->getMessage()], 500);
+            return response()->json(['error' => 'Failed to process Instagram content'], 500);
         }
+    }
+    
+    private function extractInstagramContent($url)
+    {
+        try {
+            // Use a simple Instagram scraper approach
+            $response = Http::withHeaders([
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            ])->get($url);
+            
+            if ($response->successful()) {
+                $html = $response->body();
+                
+                // Extract video URL from Instagram page
+                if (preg_match('/"video_url":"([^"]+)"/', $html, $matches)) {
+                    $videoUrl = str_replace('\\u0026', '&', $matches[1]);
+                    
+                    // Extract thumbnail
+                    $thumbnail = null;
+                    if (preg_match('/"display_url":"([^"]+)"/', $html, $thumbMatches)) {
+                        $thumbnail = str_replace('\\u0026', '&', $thumbMatches[1]);
+                    }
+                    
+                    return [
+                        'id' => time(),
+                        'title' => 'Instagram Video',
+                        'download_url' => $videoUrl,
+                        'thumbnail' => $thumbnail,
+                        'type' => 'video',
+                        'images' => null
+                    ];
+                }
+                
+                // Try to extract image
+                if (preg_match('/"display_url":"([^"]+)"/', $html, $matches)) {
+                    $imageUrl = str_replace('\\u0026', '&', $matches[1]);
+                    
+                    return [
+                        'id' => time(),
+                        'title' => 'Instagram Photo',
+                        'download_url' => null,
+                        'thumbnail' => $imageUrl,
+                        'type' => 'images',
+                        'images' => [$imageUrl]
+                    ];
+                }
+            }
+        } catch (\Exception $e) {
+            // Extraction failed
+        }
+        
+        return null;
     }
     
     private function getInstagramData($url)
