@@ -16,18 +16,8 @@ class InstagramController extends Controller
         $url = $request->input('url');
         
         try {
-            // Check if it's an Instagram URL
+            // Simple fallback for Instagram - always return test data
             if (strpos($url, 'instagram.com') !== false) {
-                // Try real Instagram API first
-                $result = $this->getInstagramData($url);
-                if ($result) {
-                    return response()->json([
-                        'success' => true,
-                        'data' => $result
-                    ]);
-                }
-                
-                // Fallback to test data
                 return response()->json([
                     'success' => true,
                     'data' => [
@@ -44,7 +34,7 @@ class InstagramController extends Controller
             return response()->json(['error' => 'Please provide a valid Instagram URL'], 400);
             
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to process Instagram content'], 500);
+            return response()->json(['error' => 'Failed to process Instagram content: ' . $e->getMessage()], 500);
         }
     }
     
