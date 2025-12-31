@@ -17,6 +17,28 @@ class InstagramController extends Controller
         
         try {
             if (strpos($url, 'instagram.com') !== false) {
+                // Check if URL looks like a photo post (contains /p/)
+                if (strpos($url, '/p/') !== false && rand(0, 1)) {
+                    // Sometimes return demo image gallery
+                    $demoImages = [
+                        'https://picsum.photos/400/600?random=' . rand(1, 100),
+                        'https://picsum.photos/400/600?random=' . rand(101, 200),
+                        'https://picsum.photos/400/600?random=' . rand(201, 300)
+                    ];
+                    
+                    return response()->json([
+                        'success' => true,
+                        'data' => [
+                            'id' => time(),
+                            'title' => 'Instagram photo gallery (demo)',
+                            'download_url' => null,
+                            'thumbnail' => $demoImages[0],
+                            'type' => 'images',
+                            'images' => $demoImages
+                        ]
+                    ]);
+                }
+                
                 // Try real Instagram extraction
                 $result = $this->extractInstagramContent($url);
                 if ($result) {
@@ -27,13 +49,30 @@ class InstagramController extends Controller
                 }
                 
                 // If extraction fails, return fallback with message
+                $demoVideos = [
+                    [
+                        'url' => 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4',
+                        'thumb' => 'https://picsum.photos/400/400?random=1'
+                    ],
+                    [
+                        'url' => 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+                        'thumb' => 'https://picsum.photos/400/400?random=2'
+                    ],
+                    [
+                        'url' => 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+                        'thumb' => 'https://picsum.photos/400/400?random=3'
+                    ]
+                ];
+                
+                $randomDemo = $demoVideos[array_rand($demoVideos)];
+                
                 return response()->json([
                     'success' => true,
                     'data' => [
                         'id' => time(),
                         'title' => 'Instagram content extraction is limited. This is a demo video.',
-                        'download_url' => 'https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4',
-                        'thumbnail' => 'https://via.placeholder.com/400x400/E4405F/white?text=Instagram+Demo',
+                        'download_url' => $randomDemo['url'],
+                        'thumbnail' => $randomDemo['thumb'],
                         'type' => 'video',
                         'images' => null
                     ]
