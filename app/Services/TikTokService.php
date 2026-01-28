@@ -60,6 +60,7 @@ class TikTokService
                     $result = [
                         'id' => $data['data']['id'] ?? time(),
                         'title' => $data['data']['title'] ?? 'TikTok Content',
+                        'author' => $data['data']['author']['nickname'] ?? $data['data']['author']['unique_id'] ?? 'Unknown',
                         'thumbnail' => $data['data']['cover'] ?? null,
                         'type' => 'video'
                     ];

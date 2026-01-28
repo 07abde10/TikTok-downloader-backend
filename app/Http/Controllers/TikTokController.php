@@ -53,7 +53,6 @@ class TikTokController extends Controller
             $response = Http::get($videoUrl);
             
             if ($response->successful()) {
-                // Determine if it's an image or video
                 $contentType = $response->header('Content-Type');
                 $isImage = strpos($contentType, 'image/') === 0;
                 
