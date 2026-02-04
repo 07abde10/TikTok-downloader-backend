@@ -33,7 +33,8 @@ class TikTokService
     
     private function isProfileUrl($url)
     {
-        return preg_match('/tiktok\.com\/@[^\/?]+\/?$/', $url);
+        return preg_match('/tiktok\.com\/@[^\/?]+\/?$/', $url) ||
+               preg_match('/www\.tiktok\.com\/@[^\/?]+\/?$/', $url);
     }
     
     private function getProfileVideos($url)
