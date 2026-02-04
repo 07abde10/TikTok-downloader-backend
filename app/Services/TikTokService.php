@@ -9,11 +9,15 @@ class TikTokService
     public function getVideoInfo($url)
     {
         try {
+            \Log::info('Processing URL: ' . $url);
+            
             // Check if it's a profile URL
             if ($this->isProfileUrl($url)) {
+                \Log::info('Detected as profile URL');
                 return $this->getProfileVideos($url);
             }
             
+            \Log::info('Detected as video URL');
             // Expand short URLs first
             $expandedUrl = $this->expandUrl($url);
             
@@ -27,6 +31,7 @@ class TikTokService
             return $this->getSSSTikData($expandedUrl);
             
         } catch (\Exception $e) {
+            \Log::error('getVideoInfo error: ' . $e->getMessage());
             return null;
         }
     }
@@ -44,13 +49,19 @@ class TikTokService
             $username = $matches[1] ?? null;
             
             if (!$username) {
+                \Log::info('No username found in URL: ' . $url);
                 return null;
             }
+            
+            \Log::info('Fetching profile for username: ' . $username);
             
             $response = Http::get('https://tikwm.com/api/user/posts', [
                 'unique_id' => $username,
                 'count' => 20
             ]);
+            
+            \Log::info('API Response status: ' . $response->status());
+            \Log::info('API Response body: ' . $response->body());
             
             if ($response->successful()) {
                 $data = $response->json();
@@ -75,9 +86,12 @@ class TikTokService
                         'author' => $data['data']['user']['nickname'] ?? $username,
                         'videos' => $videos
                     ];
+                } else {
+                    \Log::info('API returned error or no videos: ' . json_encode($data));
                 }
             }
         } catch (\Exception $e) {
+            \Log::error('Profile fetch error: ' . $e->getMessage());
         }
         
         return null;
