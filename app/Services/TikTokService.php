@@ -9,6 +9,11 @@ class TikTokService
     public function getVideoInfo($url)
     {
         try {
+            // Check if it's a profile URL
+            if ($this->isProfileUrl($url)) {
+                return $this->getProfileVideos($url);
+            }
+            
             // Expand short URLs first
             $expandedUrl = $this->expandUrl($url);
             
@@ -24,6 +29,57 @@ class TikTokService
         } catch (\Exception $e) {
             return null;
         }
+    }
+    
+    private function isProfileUrl($url)
+    {
+        return preg_match('/tiktok\.com\/@[^\/?]+\/?$/', $url);
+    }
+    
+    private function getProfileVideos($url)
+    {
+        try {
+            preg_match('/\/@([^\/?]+)/', $url, $matches);
+            $username = $matches[1] ?? null;
+            
+            if (!$username) {
+                return null;
+            }
+            
+            $response = Http::get('https://tikwm.com/api/user/posts', [
+                'unique_id' => $username,
+                'count' => 20
+            ]);
+            
+            if ($response->successful()) {
+                $data = $response->json();
+                
+                if ($data['code'] === 0 && !empty($data['data']['videos'])) {
+                    $videos = [];
+                    
+                    foreach ($data['data']['videos'] as $video) {
+                        $videos[] = [
+                            'id' => $video['video_id'],
+                            'title' => $video['title'] ?? 'TikTok Video',
+                            'author' => $data['data']['user']['nickname'] ?? $username,
+                            'thumbnail' => $video['cover'] ?? null,
+                            'download_url' => $video['hdplay'] ?? $video['play'],
+                            'type' => 'video'
+                        ];
+                    }
+                    
+                    return [
+                        'type' => 'profile',
+                        'username' => $username,
+                        'author' => $data['data']['user']['nickname'] ?? $username,
+                        'videos' => $videos
+                    ];
+                }
+            }
+        } catch (\Exception $e) {
+        }
+        
+        return null;
     }
     
     private function getSSSTikData($url)
